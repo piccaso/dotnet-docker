@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace aspnetapp
     {
         public static void Main(string[] args)
         {
+            foreach (DictionaryEntry o in Environment.GetEnvironmentVariables())
+            {
+                Console.WriteLine($"{o.Key}={o.Value}");
+            }
+
             BuildWebHost(args).Run();
         }
 

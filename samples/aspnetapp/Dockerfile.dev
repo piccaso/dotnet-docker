@@ -1,15 +1,14 @@
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /app
+ENV ASPNETCORE_URLS="http://+:80" \
+    ASPNETCORE_ENVIRONMENT="DockerDev"
 
-# copy csproj and restore as distinct layers
 COPY *.sln .
 COPY aspnetapp/*.csproj ./aspnetapp/
 RUN dotnet restore
 
-# copy everything else and build app
 COPY . .
 
-ENV ASPNETCORE_URLS http://+:80
 WORKDIR /app/aspnetapp/
 RUN dotnet build
-ENTRYPOINT ["dotnet", "watch", "run"]
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]

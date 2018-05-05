@@ -1,4 +1,6 @@
-﻿namespace aspnetapp.Models
+﻿using LiteDB;
+
+namespace aspnetapp.Models
 {
     public class AnswerNode
     {

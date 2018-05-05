@@ -12,9 +12,9 @@ namespace aspnetapp.Controllers
     [Route("[controller]/[action]")]
     public class ApiController : Controller
     {
-        private readonly AppDbContext _db;
+        private readonly Repository _db;
 
-        public ApiController(AppDbContext db)
+        public ApiController(Repository db)
         {
             _db = db;
         }
@@ -22,11 +22,9 @@ namespace aspnetapp.Controllers
         [HttpPost]
         public JsonResult InsertDummyData()
         {
-            var base64Image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-
             var question = new QuestionNode
             {
-                Image = Convert.FromBase64String(base64Image),
+                Image = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="),
                 Header = "A Cab hits a biker and drives off",
                 Question = "You whant to report a crime but don't want to mention your name, choose your pain:",
                 Answers = new List<AnswerNode>
@@ -49,8 +47,7 @@ namespace aspnetapp.Controllers
                 }
             };
 
-            _db.Questions.Add(question);
-            _db.SaveChanges();
+            _db.InsertQuestion(question);
 
             return Json(question);
         }
@@ -58,20 +55,19 @@ namespace aspnetapp.Controllers
         [HttpGet]
         public JsonResult GetAllQuestions()
         {
-            return Json(_db.Questions.Include(q=>q.Answers).ToList());
+            return Json(_db.GetAllQuestions());
         }
 
         [HttpGet]
-        public JsonResult GetAllAnswers()
+        public JsonResult GetNextQuestions(int? ammount = null)
         {
-            return Json(_db.Answers);
+            return Json(_db.GetNextQuestions(ammount ?? 1));
         }
 
         [HttpDelete]
         public IActionResult DeleteDatabase()
         {
-            _db.Database.EnsureDeleted();
-            _db.Database.EnsureCreated();
+            _db.Truncate();
             return Ok();
         }
 

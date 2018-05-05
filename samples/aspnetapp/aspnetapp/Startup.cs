@@ -25,7 +25,7 @@ namespace aspnetapp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(o => o.UseSqlite("DataSource=local.db"));
+            services.AddSingleton<Repository>();
             services.AddMvc();
             services.AddSwaggerGen(c =>
             {
@@ -36,11 +36,6 @@ namespace aspnetapp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var db = serviceScope.ServiceProvider.GetService<AppDbContext>();
-                db.Database.EnsureCreated();
-            }
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c =>

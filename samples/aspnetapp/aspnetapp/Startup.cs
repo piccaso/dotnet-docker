@@ -6,6 +6,7 @@ using aspnetapp.Database;
 using aspnetapp.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,10 @@ namespace aspnetapp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var ro = new RewriteOptions();
+            ro.AddRewrite("^healthcheck", "Api/HealthCheck", false);
+            app.UseRewriter(ro);
+
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c =>

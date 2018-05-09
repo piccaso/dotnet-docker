@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using aspnetapp.Database;
 using aspnetapp.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +16,12 @@ namespace aspnetapp.Controllers
     public class ApiController : Controller
     {
         private readonly Repository _db;
+        private readonly IApplicationLifetime _applicationLifetime;
 
-        public ApiController(Repository db)
+        public ApiController(Repository db, IApplicationLifetime applicationLifetime)
         {
             _db = db;
+            _applicationLifetime = applicationLifetime;
         }
 
         [HttpPost]
@@ -69,6 +74,47 @@ namespace aspnetapp.Controllers
         {
             _db.Truncate();
             return Ok();
+        }
+
+        [HttpPatch]
+        public IActionResult StopApplication()
+        {
+            _applicationLifetime.StopApplication();
+            return Ok();
+        }
+
+        [HttpGet]
+        public IActionResult GetHeaders()
+        {
+            dynamic r = new ExpandoObject();
+            
+            if(HttpContext.Request.Headers.TryGetValue("Accept-Language", out var acceptLanguage))
+            {
+                var req = new HttpRequestMessage();
+                if (req.Headers.AcceptLanguage.TryParseAdd(acceptLanguage))
+                {
+                    r.lang = req.Headers.AcceptLanguage;
+                }
+            }
+
+            r.headers = HttpContext.Request.Headers;
+            return Json(r);
+        }
+
+        public static bool BadHealth = false;
+
+        [HttpGet]
+        public IActionResult HealthCheck()
+        {
+            if(BadHealth) throw new Exception("bad health");
+            return Ok();
+        }
+
+        [HttpPut]
+        public IActionResult SetBadHealth(bool value)
+        {
+            BadHealth = value;
+            return Json(BadHealth);
         }
 
     }

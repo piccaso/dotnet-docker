@@ -17,4 +17,5 @@ ENV ASPNETCORE_URLS="http://+:80" \
     ASPNETCORE_ENVIRONMENT="DockerDev"
 WORKDIR /app
 COPY --from=build /app/aspnetapp/out ./
+HEALTHCHECK CMD curl -f http://localhost/healthcheck || exit 1
 ENTRYPOINT ["dotnet", "aspnetapp.dll"]

@@ -5,3 +5,30 @@
 <h3>@ViewData["Message"]</h3>
 
 <p>Use this area to provide additional information.</p>
+
+<div id="app" style="white-space: pre;">
+    {{ message }}
+</div>
+
+@section Scripts
+{
+    <script>
+        var appVm = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!'
+            }
+        });
+        var connection = new signalR.HubConnection("/Hub");//, { logger: signalR.LogLevel.Information });
+        connection.on("ReceiveMessage", (user, message) => {
+            console.log(user, message);
+            appVm.message = user + ': ' + message;
+        });
+
+        connection.start().then(() => {
+            
+        });
+
+    </script>
+}
+

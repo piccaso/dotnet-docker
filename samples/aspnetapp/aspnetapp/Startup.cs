@@ -32,6 +32,8 @@ namespace aspnetapp
             {
                 c.SwaggerDoc("v1", new Info { Title = "API", Version = "v1" });
             });
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +50,10 @@ namespace aspnetapp
                 c.SwaggerEndpoint("../swagger/v1/swagger.json", "APIv1");
             });
             app.UseStaticFiles();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<MyHub>("/hub");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

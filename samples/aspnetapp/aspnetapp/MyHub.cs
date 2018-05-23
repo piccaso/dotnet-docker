@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
@@ -18,10 +19,26 @@ namespace aspnetapp
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
 
+        public async Task SendUpdates()
+        {
+            int userCount = 0;
+            string[] users = null;
+            lock (StaticHub.Users)
+            {
+                userCount = StaticHub.Users.Count;
+                users = StaticHub.Users.ToArray();
+            }
+            await Clients.All.SendAsync("UserCount", userCount);
+            await Clients.All.SendAsync("Users", users);
+        }
+
         public override async Task OnConnectedAsync()
         {
-            StaticHub.Users.Add(Context.ConnectionId);
-            await SendMessage(StaticHub.Users.Count.ToString(), "\n" + string.Join("\n", StaticHub.Users));
+            lock (StaticHub.Users)
+            {
+                StaticHub.Users.Add(Context.ConnectionId);
+            }
+            await SendUpdates();
             //base.OnConnectedAsync();
         }
 
@@ -29,13 +46,17 @@ namespace aspnetapp
         {
             try
             {
-                StaticHub.Users.Remove(Context.ConnectionId);
-                await SendMessage(StaticHub.Users.Count.ToString(), "\n" + string.Join("\n", StaticHub.Users));
+                lock (StaticHub.Users)
+                {
+                    StaticHub.Users.Remove(Context.ConnectionId);
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+
+            await SendUpdates();
         }
     }
 }

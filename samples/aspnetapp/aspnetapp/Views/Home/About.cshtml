@@ -6,8 +6,10 @@
 
 <p>Use this area to provide additional information.</p>
 
-<div id="app" style="white-space: pre;">
-    {{ message }}
+<div id="app">
+    online users: {{ userCount }}<br/>
+    <hr/>
+    <pre v-for="(user,i) in users">User {{ i+1 }}: connectionId='{{ user }}';</pre>
 </div>
 
 @section Scripts
@@ -16,14 +18,14 @@
         var appVm = new Vue({
             el: '#app',
             data: {
-                message: 'Hello Vue!'
+                users: null,
+                userCount: 0
             }
         });
         var connection = new signalR.HubConnection("/Hub");//, { logger: signalR.LogLevel.Information });
-        connection.on("ReceiveMessage", (user, message) => {
-            console.log(user, message);
-            appVm.message = user + ': ' + message;
-        });
+
+        connection.on("Users", users => { appVm.users = users });
+        connection.on("UserCount", userCount => { appVm.userCount = userCount });
 
         connection.start().then(() => {
             

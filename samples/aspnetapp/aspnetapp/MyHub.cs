@@ -14,10 +14,12 @@ namespace aspnetapp
 
     public class MyHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public async Task Send(string message)
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            await Clients.All.SendAsync("Receive", Context.ConnectionId, message);
         }
+
+        public object Ping() => new {serverTime=DateTime.Now};
 
         public async Task SendUpdates()
         {

@@ -7,29 +7,54 @@
 <p>Use this area to provide additional information.</p>
 
 <div id="app">
-    online users: {{ userCount }}<br/>
-    <hr/>
-    <pre v-for="(user,i) in users">User {{ i+1 }}: connectionId='{{ user }}';</pre>
+    online users: {{ userCount }}<br />
+    <hr />
+    <div v-for="(user,i) in users">User {{ i+1 }}: connectionId={{ user }}</div>
+    <hr />
+    <form v-on:submit.prevent="send">
+        <input v-model="message" placeholder="message">
+        <button type="submit">Send</button>
+    </form>
+    <hr />
+    <div v-for="m in inc" style="display: grid; grid-template-columns: 30% 70%">
+        <div style="text-align: right">{{ m.id }}:&nbsp;</div> 
+        <div>{{ m.msg }}</div>
+    </div>
 </div>
 
 @section Scripts
 {
     <script>
+        var connection = new signalR.HubConnection("/Hub"); //, { logger: signalR.LogLevel.Information });
         var appVm = new Vue({
             el: '#app',
             data: {
                 users: null,
-                userCount: 0
+                userCount: 0,
+                message: "",
+                inc: []
+            },
+            methods: {
+                send: e => {if (appVm.message.length) {connection.invoke("Send", appVm.message).then(() => {appVm.message = "";});}}
             }
         });
-        var connection = new signalR.HubConnection("/Hub");//, { logger: signalR.LogLevel.Information });
 
         connection.on("Users", users => { appVm.users = users });
         connection.on("UserCount", userCount => { appVm.userCount = userCount });
-
-        connection.start().then(() => {
-            
+        connection.on("Receive", (id, msg) => {
+            appVm.inc.unshift({ id: id, msg: msg });
+            while (appVm.inc.length > 5) appVm.inc.pop();
         });
+
+        connection.start();
+        setInterval(() => {
+            connection.invoke("Ping").catch(err => {
+                console.error(err);
+                if (err.message.indexOf("connection") !== -1) connection.start();
+            }).then(pong => {
+                //console.log(pong);
+            });
+        }, 5000);
 
     </script>
 }
